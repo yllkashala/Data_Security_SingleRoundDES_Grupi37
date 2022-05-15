@@ -161,3 +161,89 @@ string right_expanded = permute(right, exp_d, 48);
 // XOR RoundKey[i] and right expanded
 string x = xor_(rkb, right_expanded);
 
+// S-boxes
+string op = "";
+for (int i = 0; i < 8; i++) {
+
+int row = 2 * int(x[i * 6] - 'o') + int(x[i * 6 + 5] - '0');
+int col = 8 * int(x[i * 6 + 1] - 'o') + 4 * int(x[i * 6 + 2] - '0') + 2 * int(x[i * 6 +3]) + 1 *int(x[i*6 +4]);
+int val = s[i][row][col];
+op += char(val/8 + 'o');
+val = val % 8;
+op += char(val/4 + 'o');
+val = val % 4;
+op += char(val/2 + 'o');
+val = val % 2;
+op += char(val + 'o');
+}
+// Straight D-box
+op = permute(op, per, 32);
+
+//Straight D-box
+op = permute(op, per, 32);
+//XOR left and op
+
+x = xor_(op, left);
+
+left = x;
+
+string newRoundKey = leftK + rightK;
+//Swapper
+swap(left, right);
+cout << "for round " << r + 1 << ":" << endl << "left: " << bin2dec(left)<< " right " << bin2dec(right) << "" << "round key " << bin2dec(newRoundKey) << endl;
+}
+ int main(){
+
+
+//pt is plain text
+int r, s;
+string pt, key;
+cout << "Enter 16(64bit)characters long text(int decimal): ";
+cin >> pt;
+cout << "Enter 14(56 bit)charachters long key(in decimal): ";
+cin >> key;
+cout << "Enter round no:";
+cin >> r;
+
+
+//-----------------------KeyGeneration----------------------
+//hex to binary
+key = dec2bin(key);
+
+//Splitting
+string left = key.substr(0, 28);
+string right = key.substr(28, 28);
+
+//shifting
+if (r == 1 || r == 2 || r == 9 || r == 16)
+s = 1;
+else s = 2;
+
+left = shift_left(left, s);
+right = shift_left(right, s);
+
+//permutation choice 2
+int p_choice_2[48] = { 14,17,11,24,1,5,
+3,28,15,6,21,10,
+23,19,12,4,26,8,
+16,7,27,20,13,2,
+41,52,31,37,47,55,
+30,40,51,45,33,48,
+44,49,39,56,34,53,
+46,42,50,36,29,32 };
+
+//combining
+string combine = left + right;
+
+//permutated choice 2
+string roundKeyBin = permute(combine, p_choice_2, 48);
+string roundKey = bin2dec(roundKeyBin);
+
+//----------------------encryption------------------------
+encrypt(pt, roundKeyBin, roundKey, r, left, right);
+
+
+
+}
+
+
